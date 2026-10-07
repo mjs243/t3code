@@ -16,6 +16,7 @@ Route: **fork** = personal change, keep here · **upstream** = generic enough fo
 - **Idea:** a setting that folds only tool/activity rows and keeps every assistant _message_ visible in a settled turn. Alternative: never fold a message that contains a table or a bold price/`ACCOUNTS:` line. At minimum, the fold header should show how many assistant messages are hidden ("Worked for 3m · 2 messages"), not just the duration.
 - **Code:** `apps/web/src/components/chat/MessagesTimeline.logic.ts` → `deriveTurnFolds` (~L863–1049); mobile mirror `apps/mobile/src/lib/threadActivity.ts`.
 - **Route:** fork first (one boolean in the fold derivation), then propose upstream as a config option ("focused configuration option for an established capability" is an allowed PR class in their CONTRIBUTING).
+- **Status:** shipped on `malik` 2026-10-07 (`foldWorkOnly`, off by default). Web: Settings → General → Behavior → "Keep messages out of work folds". Mobile: Settings → Thread behavior → Beta. The "· 2 messages" header count is not done.
 
 ### 2. Readability — "a sea of greyish text on a black background"
 
