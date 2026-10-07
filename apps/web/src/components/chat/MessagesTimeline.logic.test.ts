@@ -1343,6 +1343,66 @@ describe("deriveMessagesTimelineRows", () => {
     expect(
       expandedRows.find((row) => row.kind === "turn-fold" && row.expanded === true),
     ).toBeDefined();
+
+    const workOnlyRows = deriveMessagesTimelineRows({
+      timelineEntries,
+      isWorking: false,
+      activeTurnStartedAt: null,
+      turnDiffSummaries: [],
+      supportsConversationRollback: false,
+      foldWorkOnly: true,
+    });
+    expect(workOnlyRows.map((row) => row.id)).toEqual([
+      "user-entry",
+      "turn-fold:turn-1",
+      "assistant-first-entry",
+      "assistant-final-entry",
+    ]);
+  });
+
+  it("does not fold a turn whose only hidden rows would be messages when folding work only", () => {
+    const rows = deriveMessagesTimelineRows({
+      timelineEntries: [
+        {
+          id: "user-entry",
+          kind: "message" as const,
+          createdAt: "2026-01-01T00:00:00Z",
+          message: {
+            id: "user-1" as never,
+            role: "user" as const,
+            text: "Plan it",
+            runId: null,
+            createdAt: "2026-01-01T00:00:00Z",
+            updatedAt: "2026-01-01T00:00:00Z",
+            streaming: false,
+          },
+        },
+        ...["first", "final"].map((name, index) => ({
+          id: `assistant-${name}-entry`,
+          kind: "message" as const,
+          createdAt: `2026-01-01T00:00:0${index + 1}Z`,
+          message: {
+            id: `assistant-${name}` as never,
+            role: "assistant" as const,
+            text: name,
+            runId: "turn-1" as never,
+            createdAt: `2026-01-01T00:00:0${index + 1}Z`,
+            updatedAt: `2026-01-01T00:00:0${index + 1}Z`,
+            streaming: false,
+          },
+        })),
+      ],
+      isWorking: false,
+      activeTurnStartedAt: null,
+      turnDiffSummaries: [],
+      supportsConversationRollback: false,
+      foldWorkOnly: true,
+    });
+    expect(rows.map((row) => row.id)).toEqual([
+      "user-entry",
+      "assistant-first-entry",
+      "assistant-final-entry",
+    ]);
   });
 
   it.each([1, 2, 3])("folds %i completed activities after the terminal response", (count) => {

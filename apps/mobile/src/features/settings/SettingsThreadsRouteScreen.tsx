@@ -249,6 +249,8 @@ function BetaSettingsSection() {
   const preferences = useAtomValue(mobilePreferencesAtom);
   const workingShelfEnabled =
     AsyncResult.isSuccess(preferences) && preferences.value.workingShelfEnabled === true;
+  const foldWorkOnly =
+    AsyncResult.isSuccess(preferences) && preferences.value.foldWorkOnly === true;
 
   return (
     <View className="gap-3">
@@ -259,11 +261,18 @@ function BetaSettingsSection() {
           value={workingShelfEnabled}
           onValueChange={(value) => savePreferences({ workingShelfEnabled: value })}
         />
+        <SettingsSwitchRow
+          icon="text.bubble"
+          label="Keep messages out of work folds"
+          value={foldWorkOnly}
+          onValueChange={(value) => savePreferences({ foldWorkOnly: value })}
+        />
       </SettingsSection>
       <Text className="px-2 text-sm text-foreground-muted">
         Fold working and monitoring threads into a Working section. They return to the top of the
         list when they need you. While this is on, active threads are ordered by time and cannot be
-        moved.
+        moved. Keeping messages out of work folds leaves every assistant message visible in a
+        finished turn; only tool activity collapses.
       </Text>
     </View>
   );

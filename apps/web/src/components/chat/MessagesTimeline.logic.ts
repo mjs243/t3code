@@ -865,7 +865,8 @@ function failedTimelineRunIds(
  * a "Worked for ..." row. Ordinary trailing work joins the fold, while failures
  * and work still in progress stay visible. A prompt without a run (a
  * provider-native subagent, or a turn imported from V1) folds its response
- * the same way.
+ * the same way. With `foldWorkOnly`, assistant messages stay visible and only
+ * the work around them folds.
  */
 function deriveTurnFolds(input: {
   timelineEntries: ReadonlyArray<TimelineEntry>;
@@ -874,6 +875,7 @@ function deriveTurnFolds(input: {
   unfoldedRunIds: ReadonlySet<RunId>;
   /** Keeps the latest runless response open; V2 work must not reopen imported turns. */
   runlessWorkActive: boolean;
+  foldWorkOnly?: boolean;
 }): ReadonlyMap<string, TurnFold> {
   const interruptedRunIds = new Set<RunId>();
   for (const entry of input.timelineEntries) {
@@ -974,7 +976,10 @@ function deriveTurnFolds(input: {
       ? group.entries.findIndex((entry) => entry.id === group.terminalEntry?.id)
       : group.entries.length;
     for (const [index, entry] of group.entries.entries()) {
-      if (entry.id === group.terminalEntry?.id) {
+      if (
+        entry.id === group.terminalEntry?.id ||
+        (input.foldWorkOnly && entry.kind === "message")
+      ) {
         continue;
       }
       const isCompaction =
@@ -1219,6 +1224,8 @@ export function deriveMessagesTimelineRows(input: {
   liveAgentTaskIds?: ReadonlySet<string> | undefined;
   /** Live bootstrap progress. Renders a stage card under the first user message. */
   worktreeSetup?: WorktreeSetupSnapshot | null;
+  /** Keep assistant messages out of "Worked for…" folds. */
+  foldWorkOnly?: boolean;
 }): MessagesTimelineRow[] {
   const timelineEntries = withoutSubagentDelegationRows(
     settleSupersededReasoning(input.timelineEntries),
@@ -1258,6 +1265,7 @@ export function deriveMessagesTimelineRows(input: {
     latestRun: input.latestRun ?? null,
     unfoldedRunIds: new Set([...activeVisualResponseRunIds, ...failedRunIds]),
     runlessWorkActive,
+    foldWorkOnly: input.foldWorkOnly ?? false,
   });
   const collapsedEntryIds = new Set<string>();
   for (const fold of foldsByAnchorEntryId.values()) {

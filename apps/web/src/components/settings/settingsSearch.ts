@@ -358,6 +358,12 @@ export const SETTINGS_SEARCH_ITEMS = [
     searchTerms: ["timestamp clock locale system browser os 12 hour 24 hour"],
   },
   {
+    id: "fold-work-only",
+    title: "Keep messages out of work folds",
+    to: "/settings/general",
+    searchTerms: ["worked for collapse fold hide assistant text messages tools activity"],
+  },
+  {
     id: "response-streaming",
     title: "Response streaming",
     to: "/settings/general",

@@ -899,6 +899,44 @@ describe("buildThreadFeed", () => {
     ]);
   });
 
+  it("keeps middle assistant messages out of the fold when folding work only", () => {
+    const message = (name: string, position: number) =>
+      projected(
+        {
+          ...assistantMessage(`2026-06-20T00:00:0${position}.000Z`),
+          id: TurnItemId.make(`item-${name}`),
+          messageId: MessageId.make(`message-${name}`),
+          text: name,
+        },
+        position,
+      );
+    const feed = buildThreadFeed([
+      projected(userMessage(), 0),
+      message("opening", 1),
+      projected(command(), 2),
+      message("middle", 3),
+      projected(assistantMessage("2026-06-20T00:00:04.000Z"), 4),
+    ]);
+    const ids = (foldWorkOnly: boolean) =>
+      deriveThreadFeedPresentation(feed, null, new Set(), new Set(), null, false, foldWorkOnly).map(
+        (entry) => entry.id,
+      );
+
+    expect(ids(false)).toEqual([
+      "message-user",
+      "message-opening",
+      `run-fold:${runId}`,
+      "message-assistant",
+    ]);
+    expect(ids(true)).toEqual([
+      "message-user",
+      "message-opening",
+      `run-fold:${runId}`,
+      "message-middle",
+      "message-assistant",
+    ]);
+  });
+
   it("folds subagents while keeping created-thread and fork cards visible", () => {
     const { providerThreadId: _providerThreadId, ...forkBase } = base(
       "item-fork",

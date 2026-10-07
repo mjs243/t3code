@@ -618,6 +618,9 @@ export function useSettingsRestore(onRestored?: () => void) {
       ...(settings.contextWindowMeterEnabled !== DEFAULT_UNIFIED_SETTINGS.contextWindowMeterEnabled
         ? ["Context window indicator"]
         : []),
+      ...(settings.foldWorkOnly !== DEFAULT_UNIFIED_SETTINGS.foldWorkOnly
+        ? ["Keep messages out of work folds"]
+        : []),
       ...(settings.responseStreamingMode !== DEFAULT_UNIFIED_SETTINGS.responseStreamingMode
         ? ["Response streaming"]
         : []),
@@ -688,6 +691,7 @@ export function useSettingsRestore(onRestored?: () => void) {
       settings.proactivePanelsEnabled,
       settings.environmentIdentificationMode,
       settings.contextWindowMeterEnabled,
+      settings.foldWorkOnly,
       settings.fontFamilyCode,
       settings.fontFamilyComposer,
       settings.fontFamilySans,
@@ -802,6 +806,7 @@ export function useSettingsRestore(onRestored?: () => void) {
       sendShortcut: DEFAULT_UNIFIED_SETTINGS.sendShortcut,
       followUpBehavior: DEFAULT_UNIFIED_SETTINGS.followUpBehavior,
       contextWindowMeterEnabled: DEFAULT_UNIFIED_SETTINGS.contextWindowMeterEnabled,
+      foldWorkOnly: DEFAULT_UNIFIED_SETTINGS.foldWorkOnly,
       environmentIdentificationMode: DEFAULT_UNIFIED_SETTINGS.environmentIdentificationMode,
       glassOpacity: DEFAULT_UNIFIED_SETTINGS.glassOpacity,
       panelAnimationDurationMs: DEFAULT_UNIFIED_SETTINGS.panelAnimationDurationMs,
@@ -2524,6 +2529,27 @@ export function GeneralSettingsPanel() {
                 </SelectItem>
               </SelectPopup>
             </Select>
+          }
+        />
+        <SettingsRow
+          {...searchableSetting("fold-work-only")}
+          description="Settled turns fold only tool and work rows. Assistant messages written between tool calls stay visible."
+          resetAction={
+            settings.foldWorkOnly !== DEFAULT_UNIFIED_SETTINGS.foldWorkOnly ? (
+              <SettingResetButton
+                label="work folds"
+                onClick={() =>
+                  updateSettings({ foldWorkOnly: DEFAULT_UNIFIED_SETTINGS.foldWorkOnly })
+                }
+              />
+            ) : null
+          }
+          control={
+            <Switch
+              checked={settings.foldWorkOnly}
+              onCheckedChange={(checked) => updateSettings({ foldWorkOnly: Boolean(checked) })}
+              aria-label="Keep messages out of work folds"
+            />
           }
         />
         <SettingsRow

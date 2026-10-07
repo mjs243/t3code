@@ -7,6 +7,8 @@ import {
   type WorktreeSetupCardProps,
 } from "./worktree-setup-card";
 import * as Haptics from "expo-haptics";
+import { useAtomValue } from "@effect/atom-react";
+import { AsyncResult } from "effect/reactivity";
 import { KeyboardAwareLegendList } from "@legendapp/list/keyboard";
 import { useViewabilityAmount, type LegendListRef } from "@legendapp/list/react-native";
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
@@ -102,6 +104,7 @@ import { useUniwindTheme } from "../../lib/useUniwindTheme";
 import { IOS_NAV_BAR_HEIGHT } from "../../lib/layoutMetrics";
 import { useFontFamily } from "../../lib/useFontFamily";
 import { scopedThreadKey } from "../../lib/scopedEntities";
+import { mobilePreferencesAtom } from "../../state/preferences";
 import { copyTextWithHaptic } from "../../lib/copyTextWithHaptic";
 import { tryOpenExternalUrl } from "../../lib/openExternalUrl";
 import { downloadAndShareAttachment } from "../../lib/attachmentDownload";
@@ -2643,6 +2646,9 @@ export const ThreadFeed = memo(function ThreadFeed(props: ThreadFeedProps) {
     reportHeaderMaterialVisibility(false);
   }, [feedThreadKey, reportHeaderMaterialVisibility]);
 
+  const preferences = useAtomValue(mobilePreferencesAtom);
+  const foldWorkOnly =
+    AsyncResult.isSuccess(preferences) && preferences.value.foldWorkOnly === true;
   const presentedFeed = useMemo(
     () =>
       appendPendingThreadMessages(
@@ -2657,6 +2663,7 @@ export const ThreadFeed = memo(function ThreadFeed(props: ThreadFeedProps) {
           ),
           props.activeWorkStartedAt,
           props.runlessWorkActive ?? false,
+          foldWorkOnly,
         ),
         props.feed,
         props.queuedMessages,
@@ -2669,6 +2676,7 @@ export const ThreadFeed = memo(function ThreadFeed(props: ThreadFeedProps) {
       props.runlessWorkActive,
       props.feed,
       props.latestRun,
+      foldWorkOnly,
     ],
   );
   const setupAnchorIndex = presentedFeed.findIndex(

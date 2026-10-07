@@ -1020,11 +1020,13 @@ export function failedFeedRunIds(
  * A prompt without a run (a provider-native subagent, or a turn imported from
  * V1) folds its response like a run. `runlessWorkActive` keeps the latest
  * runless response open; V2 work must not reopen imported turns.
+ * `foldWorkOnly` keeps every assistant message out of the fold.
  */
 function deriveThreadFeedRunFolds(
   feed: ReadonlyArray<ThreadFeedEntry>,
   latestRun: ThreadFeedLatestRun | null,
   runlessWorkActive: boolean,
+  foldWorkOnly = false,
 ): ReadonlyMap<string, ThreadFeedRunFold> {
   const firstAssistantMessageIdByRun = new Map<RunId, string>();
   const terminalAssistantMessageIdByRun = new Map<RunId, string>();
@@ -1100,6 +1102,7 @@ function deriveThreadFeedRunFolds(
           (entry) =>
             entry.id !== firstAssistantId &&
             entry.id !== terminalAssistantId &&
+            !(foldWorkOnly && entry.type === "message") &&
             entry.type !== "html-render" &&
             !(
               entry.type === "activity-group" &&
@@ -1197,6 +1200,7 @@ export function deriveThreadFeedPresentation(
   activeWorkStartedAt: string | null = null,
   /** The live work is a provider-native subagent's runless root turn. */
   runlessWorkActive = false,
+  foldWorkOnly = false,
 ): ThreadFeedEntry[] {
   const retainedFeed = feed.filter(
     (entry) =>
@@ -1213,6 +1217,7 @@ export function deriveThreadFeedPresentation(
     sourceFeed,
     latestRun,
     isWorking && runlessWorkActive,
+    foldWorkOnly,
   );
   const collapsedEntryIds = new Set<string>();
   for (const fold of foldsByAnchorId.values()) {
